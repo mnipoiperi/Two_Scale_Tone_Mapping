@@ -3,11 +3,19 @@ import sys
 import math
 import numpy as np
 from skimage import io, color
+from l0_gradient_minimization import l0_gradient_minimization_2d
+import demo_util
 
 def decomposition(img, mode):
     if mode == 'L0':
     ### L0 ###
-        print('QQ')
+        lmd = 0.11 
+        beta_max = 10
+        img_base = l0_gradient_minimization_2d(img, lmd, beta_max)
+        img_diff = img - img_base
+        #cv2.imshow("img_base_L0", img_base)
+        #cv2.waitKey()
+        return img_base, img_diff  
 
     ### Bilateral filter ###
     elif mode != 'BF':
@@ -23,12 +31,12 @@ def decomposition(img, mode):
 if __name__ == "__main__":
     ### image loading ***
     inputName = str(sys.argv[1])
-    mode_decomposition = str(sys.argv[2]) #BF or L0
+    mode_decomposition = str(sys.argv[3]) #BF or L0
 
     ### Settings ###
     img_input_RGB = cv2.imread(inputName)
     img_input_RGB = img_input_RGB.astype(np.float32)
-    #img_input_RGB = cv2.resize(img_input_RGB, (0,0), fx = 0.3, fy = 0.3)
+    img_input_RGB = cv2.resize(img_input_RGB, (0,0), fx = 0.3, fy = 0.3)
     img_input_gray = cv2.cvtColor(img_input_RGB, cv2.COLOR_BGR2GRAY)
     img_input_gray = img_input_gray.astype(np.float32)/255
 
@@ -36,40 +44,32 @@ if __name__ == "__main__":
     img_base, img_detail = decomposition(img_input_gray, mode_decomposition)
     
     ### combination ###
-    compressionfactor = 0.15/(np.max(img_base)-np.min(img_base))
+    compressionfactor = 0.8/(np.max(img_base)-np.min(img_base))
     log_absolute_scale = np.max(img_base)*compressionfactor
-    print(compressionfactor)
-    print(log_absolute_scale)
-    #img_out = (img_base*compressionfactor+ img_detail*1 - 0)/compressionfactor
-    img_out = (img_base*compressionfactor+ img_detail*1 - 0)
+    img_detail[(img_detail<0.01) & (img_detail>-0.01)] = 0
+    img_detail = img_detail/(img_detail.max()/1)
+    img_out = (img_base*compressionfactor+ img_detail - log_absolute_scale)
+    img_out = img_out - img_out.min()
+    img_out = img_out/compressionfactor
+    cv2.imshow("detail", img_detail)
     cv2.imshow("output_gray1", img_out)
     
     ### correction ###
-    gamma = 1.0/3.2
-    bias = -img_out.min()
-    gain = 0.45
-    img_out = (gain*(img_out+bias))**gamma
     img_out[img_out>1] = 1
     img_out[img_out<0] = 0
-    cv2.imshow("output_gray2", img_out)
 
-    ### restore color ###
-    # LAB
-    img_out_LAB = np.zeros(img_input_RGB.shape, dtype = img_input_RGB.dtype)
-    img_input_LAB = cv2.cvtColor(img_input_RGB, cv2.COLOR_BGR2LAB)
-    img_out_LAB[:,:,1:3] = img_input_LAB[:,:,1:3]
-    img_out_LAB[:,:,0] = img_out.astype(np.uint8)
-    img_out_RGB = cv2.cvtColor(img_out_LAB, cv2.COLOR_LAB2BGR)
-    # RGB
+    ### restore color ###    
     grayRatio = np.divide(img_out, (img_input_gray+0.1))
     img_out_RGB = np.zeros(img_input_RGB.shape, dtype = img_input_RGB.dtype)
     img_out_RGB[:,:, 0] = img_input_RGB[:,:,0] * grayRatio
     img_out_RGB[:,:, 1] = img_input_RGB[:,:,1] * grayRatio
     img_out_RGB[:,:, 2] = img_input_RGB[:,:,2] * grayRatio
+    img_out_RGB[img_out_RGB>255] = 255
+    img_out_RGB[img_out_RGB<0] = 0
     # change dtype
     img_out_RGB = img_out_RGB.astype(np.uint8)
     img_input_RGB = img_input_RGB.astype(np.uint8)
-
+    
     ### show median products ###
     cv2.imshow("input_gray", img_input_gray)
     ### show colorful output ###
@@ -78,4 +78,4 @@ if __name__ == "__main__":
     cv2.waitKey()
 
     ### output ###
-    cv2.imwrite('output/' + str(sys.argv[3]) ,img_out_RGB )
+    cv2.imwrite('output/' + str(sys.argv[2]) + '_' + str(sys.argv[3])+'.jpg' ,img_out_RGB )
