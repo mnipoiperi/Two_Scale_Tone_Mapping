@@ -3,4 +3,4 @@
 reference: two-scale tone management for photographic look
 
 ## Running
-input_image 'BF'/'L0' output_image
+input_image output_image(without file name) 'BF'/'L0'
