@@ -10,3 +10,15 @@ reference: https://github.com/t-suzuki/l0_gradient_minimization_test
 
 ## Running
 input_image output_image(without file name) 'BF'/'L0'
+
+## results
+ - input image
+
+    ![](input/tree.jpg)
+ - output image of bilateral filter
+
+    ![](output/tree_BF.jpg)
+ - output image of L0 norm
+ 
+    ![](output/tree_L0.jpg)
+
