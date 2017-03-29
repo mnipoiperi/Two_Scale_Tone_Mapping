@@ -36,7 +36,7 @@ if __name__ == "__main__":
     ### Settings ###
     img_input_RGB = cv2.imread(inputName)
     img_input_RGB = img_input_RGB.astype(np.float32)
-    img_input_RGB = cv2.resize(img_input_RGB, (0,0), fx = 0.3, fy = 0.3)
+    #img_input_RGB = cv2.resize(img_input_RGB, (0,0), fx = 0.3, fy = 0.3)
     img_input_gray = cv2.cvtColor(img_input_RGB, cv2.COLOR_BGR2GRAY)
     img_input_gray = img_input_gray.astype(np.float32)/255
 
@@ -51,8 +51,8 @@ if __name__ == "__main__":
     img_out = (img_base*compressionfactor+ img_detail - log_absolute_scale)
     img_out = img_out - img_out.min()
     img_out = img_out/compressionfactor
-    cv2.imshow("detail", img_detail)
-    cv2.imshow("output_gray1", img_out)
+    #cv2.imshow("detail", img_detail)
+    #cv2.imshow("output_gray1", img_out)
     
     ### correction ###
     img_out[img_out>1] = 1
@@ -71,11 +71,11 @@ if __name__ == "__main__":
     img_input_RGB = img_input_RGB.astype(np.uint8)
     
     ### show median products ###
-    cv2.imshow("input_gray", img_input_gray)
+    #cv2.imshow("input_gray", img_input_gray)
     ### show colorful output ###
-    cv2.imshow("input_RGB", img_input_RGB)
-    cv2.imshow("output_RGB", img_out_RGB)    
-    cv2.waitKey()
+    #cv2.imshow("input_RGB", img_input_RGB)
+    #cv2.imshow("output_RGB", img_out_RGB)    
+    #cv2.waitKey()
 
     ### output ###
     cv2.imwrite('output/' + str(sys.argv[2]) + '_' + str(sys.argv[3])+'.jpg' ,img_out_RGB )
